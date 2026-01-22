@@ -13,6 +13,8 @@ export default function BullsClient({
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [origen, setOrigen] = useState<OrigenFilter>("todos");
+  const [uso, setUso] = useState(true);
+  const [pelaje, setPelaje] = useState<"" | "negro" | "colorado">("");
   type OrigenFilter = "todos" | "propio" | "catalogo" | "favoritos";
 
   const handleOrigenChange = (value: OrigenFilter) => {
@@ -28,15 +30,20 @@ export default function BullsClient({
   }, []);
 
   useEffect(() => {
-    const buildParams = () => {
-      if (origen == "todos") return { search };
-      if (origen == "favoritos") return { favoritos: "true", search };
-      return { origen, search };
-    };
+    const buildParams = (): Record<string, string> => ({
+      ...(search ? { search } : {}),
+      ...(uso ? { uso: "vaquillona" } : { uso: "vaca" }),
+      ...(pelaje ? { pelaje } : {}),
+      ...(origen && origen !== "todos"
+        ? origen === "favoritos"
+          ? { favoritos: "true" }
+          : { origen }
+        : {}),
+    });
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBulls(buildParams());
-  }, [search, origen, fetchBulls]);
+  }, [search, origen, pelaje, fetchBulls, uso]);
 
   return (
     <>
@@ -74,6 +81,38 @@ export default function BullsClient({
             </label>
           ))}
         </div>
+        <div className="mt-4">
+          <p className="font-semibold text-gray-700 mb-2">Pelaje</p>
+
+          <select
+            value={pelaje}
+            onChange={(e) => {
+              const value = e.target.value as "" | "negro" | "colorado";
+              setPelaje(value);
+            }}
+            className="w-full border border-gray-300 rounded-md px-3 py-2"
+          >
+            <option value="todos">Todos</option>
+            <option value="negro">Negro</option>
+            <option value="colorado">Colorado</option>
+          </select>
+        </div>
+        <div className="mt-4">
+          <p className="font-semibold text-gray-700 mb-2">Uso</p>
+
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={uso}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setUso(checked);
+              }}
+              className="accent-primary w-4 h-4"
+            />
+            <span>Vaquillona</span>
+          </label>
+        </div>
       </aside>
 
       {loading && <p>Cargando toros…</p>}
@@ -97,6 +136,9 @@ export default function BullsClient({
             </p>
             <p>
               <span className="font-semibold">Origen:</span> {bull.origen}
+            </p>
+            <p>
+              <span className="font-semibold">Uso:</span> {bull.uso}
             </p>
             <p>
               <span className="font-semibold">Edad:</span> {bull.edadMeses}{" "}

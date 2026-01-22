@@ -15,7 +15,7 @@ export const fetchBulls = async ({ filter }: { filter: string }) => {
       },
     },
   );
-
+  console.log(res);
   if (!res.ok) throw new Error("Error cargando toros");
 
   return res.json();
