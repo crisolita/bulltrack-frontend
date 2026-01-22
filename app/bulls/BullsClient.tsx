@@ -30,7 +30,7 @@ export default function BullsClient({
   useEffect(() => {
     const buildParams = () => {
       if (origen == "todos") return { search };
-      if (origen == "favoritos") return { favorito: "true", search };
+      if (origen == "favoritos") return { favoritos: "true", search };
       return { origen, search };
     };
 
