@@ -15,10 +15,11 @@ export default function LoginPage() {
 
     try {
       console.log("Enviando solicitud de login a:", apiUrl + "/auth/login");
-      const res = await fetch("api/auth/login", {
+      const res = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include",
       });
 
       if (!res.ok) {
