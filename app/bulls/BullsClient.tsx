@@ -1,8 +1,14 @@
 "use client";
 import { Bull } from "../types";
-
 import { useCallback, useEffect, useState } from "react";
 import { mark, refetchBulls } from "./actions";
+import { Header } from "./components/Header";
+import { Filters } from "./components/Filters";
+import { SearchBar } from "./components/SearchBar";
+import { BullsList } from "./components/BullsList";
+import { Pagination } from "./components/Pagination";
+import { useRouter } from "next/navigation";
+import { deleteCookie } from "cookies-next/client";
 
 export default function BullsClient({
   initialBulls,
@@ -12,13 +18,14 @@ export default function BullsClient({
   type ScoreOrder = "high" | "low";
   type OrigenFilter = "todos" | "propio" | "catalogo" | "favoritos";
 
+  const router = useRouter();
   const [bulls, setBulls] = useState(initialBulls);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [origen, setOrigen] = useState<OrigenFilter>("todos");
   const [uso, setUso] = useState(true);
   const [pelaje, setPelaje] = useState<"" | "negro" | "colorado">("");
-  const [scoreOrder, setScoreOrder] = useState<ScoreOrder>();
+  const [scoreOrder, setScoreOrder] = useState<ScoreOrder>("high");
   const [page, setPage] = useState(1);
   const limit = 9;
 
@@ -27,6 +34,12 @@ export default function BullsClient({
   const handleOrigenChange = (value: OrigenFilter) => {
     setOrigen(value);
   };
+
+  const handleLogout = () => {
+    deleteCookie("accessToken");
+    router.push("/login");
+  };
+
   const toggleFavorite = async (bullId: string) => {
     try {
       const updatedBull = await mark(bullId);
@@ -46,10 +59,11 @@ export default function BullsClient({
 
     setLoading(false);
   }, []);
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
   }, [search, origen, pelaje, uso, scoreOrder]);
+
   useEffect(() => {
     const buildParams = (): Record<string, string> => ({
       page: page.toString(),
@@ -65,201 +79,90 @@ export default function BullsClient({
         : {}),
     });
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBulls(buildParams());
   }, [page, search, origen, pelaje, fetchBulls, uso, scoreOrder]);
 
   return (
-    <>
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Buscar por nombre o  caravana "
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-96 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
-        />
+    <div className="h-screen relative w-full bg-dark overflow-hidden flex">
+      <div className="absolute bg-dark inset-[0_80.49%_0_0] rounded-tr-[24px] z-0" />
+      
+      <div className="absolute bg-dark inset-[0_0_84.13%_15.83%] z-0" />
+      
+      <div className="absolute flex flex-col inset-[8.12%_0_0_18.54%] items-start z-0">
+        <div className="bg-muted h-full rounded-tl-[40px] rounded-tr-[40px] w-full" />
       </div>
 
-      <aside className="flex flex-col md:flex-row gap-6">
-        <h2 className="font-bold text-lg mb-4 text-primary">Filtros activos</h2>
+      <Header onLogout={handleLogout} />
 
-        <p className="font-semibold text-gray-700 mb-2">Origen</p>
+      <Filters
+        origen={origen}
+        onOrigenChange={handleOrigenChange}
+        uso={uso}
+        onUsoChange={setUso}
+        pelaje={pelaje}
+        onPelajeChange={setPelaje}
+        scoreOrder={scoreOrder}
+        onScoreOrderChange={setScoreOrder}
+      />
 
-        <div className="space-y-2">
-          {[
-            { label: "Todos", value: "todos" },
-            { label: "Toros propios", value: "propio" },
-            { label: "Catálogo", value: "catalogo" },
-            { label: "Favoritos", value: "favoritos" },
-          ].map((opt) => (
-            <label key={opt.value} className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="origen"
-                checked={origen === opt.value}
-                onChange={() => handleOrigenChange(opt.value as OrigenFilter)}
-                className="accent-primary"
-              />
-              {opt.label}
-            </label>
-          ))}
-        </div>
-        <div className="mt-4">
-          <p className="font-semibold text-gray-700 mb-2">Pelaje</p>
-
-          <select
-            value={pelaje}
-            onChange={(e) => {
-              const value = e.target.value as "" | "negro" | "colorado";
-              setPelaje(value);
-            }}
-            className="w-full border border-gray-300 rounded-md px-3 py-2"
-          >
-            <option value="todos">Todos</option>
-            <option value="negro">Negro</option>
-            <option value="colorado">Colorado</option>
-          </select>
-        </div>
-        <div className="mt-4">
-          <p className="font-semibold text-gray-700 mb-2">Uso</p>
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={uso}
-              onChange={(e) => {
-                const checked = e.target.checked;
-                setUso(checked);
-              }}
-              className="accent-primary w-4 h-4"
-            />
-            <span>Vaquillona</span>
-          </label>
-        </div>
-        <div className="mt-4">
-          <p className="font-semibold text-gray-700 mb-2">Score</p>
-
-          <select
-            value={scoreOrder}
-            onChange={(e) => {
-              const value = e.target.value as ScoreOrder;
-              setScoreOrder(value);
-              fetchBulls();
-            }}
-            className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            <option value="high">Mejor → peor</option>
-            <option value="low">Peor → mejor</option>
-          </select>
-        </div>
-      </aside>
-
-      {loading && <p>Cargando toros…</p>}
-      <br></br>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {bulls.map((bull) => (
-          <div
-            key={bull.id}
-            className="bg-white p-4 rounded-lg shadow border border-gray-200 hover:shadow-lg transition"
-          >
-            <h3 className="text-xl font-bold text-primary mb-2">
-              {bull.nombre}
-            </h3>
-            <p>
-              <span className="font-semibold">Caravana:</span> {bull.caravana}
-            </p>
-            <p>
-              <span className="font-semibold">Raza:</span> {bull.raza}
-            </p>
-            <p>
-              <span className="font-semibold">Pelaje:</span> {bull.pelaje}
-            </p>
-            <p>
-              <span className="font-semibold">Origen:</span> {bull.origen}
-            </p>
-            <p>
-              <span className="font-semibold">Uso:</span> {bull.uso}
-            </p>
-            <p>
-              <span className="font-semibold">Edad:</span> {bull.edadMeses}{" "}
-              meses
-            </p>
-            <p className="mt-2 italic text-gray-600">
-              {bull.caracteristicaDestacada}
-            </p>
-
-            <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
-              <p>
-                <span className="font-semibold">Crecimiento:</span>{" "}
-                {bull.crecimiento}
-              </p>
-              <p>
-                <span className="font-semibold">Facilidad parto:</span>{" "}
-                {bull.facilidadParto}
-              </p>
-              <p>
-                <span className="font-semibold">Reproducción:</span>{" "}
-                {bull.reproduccion}
-              </p>
-              <p>
-                <span className="font-semibold">Moderación:</span>{" "}
-                {bull.moderacion}
-              </p>
-              <p>
-                <span className="font-semibold">Carcasa:</span> {bull.carcasa}
-              </p>
-              <p>
-                <span className="font-semibold">Score:</span> {bull.score}
-              </p>
-              <button
-                onClick={() => toggleFavorite(bull.id)}
-                className={`mt-3 w-full px-3 py-2 rounded-md text-sm font-semibold border transition
-    ${
-      bull.favorites
-        ? "bg-primary text-white border-primary"
-        : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
-    }`}
-              >
-                {bull.favorites ? "★ Favorito" : "☆ Marcar favorito"}
-              </button>
-            </div>
+      <div className="absolute flex flex-col gap-[22px] left-[20.76%] right-[2.22%] top-[10.33%] bottom-[5.9%] items-start overflow-y-auto pr-4 z-10">
+        <div className="flex gap-[8px] items-center w-full">
+          <div className="size-[16px]">
+            <svg className="block size-full" fill="none" viewBox="0 0 16 16">
+              <path d="M13.4167 11.1548C14.4125 10.7648 15.4167 9.87593 15.4167 8.08333C15.4167 5.41667 13.1944 4.75 12.0833 4.75C12.0833 3.41667 12.0833 0.75 8.08333 0.75C4.08333 0.75 4.08333 3.41667 4.08333 4.75C2.97222 4.75 0.75 5.41667 0.75 8.08333C0.75 9.87593 1.75418 10.7648 2.75 11.1548" stroke="#1C2620" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"/>
+            </svg>
           </div>
-        ))}
+          <p className="font-normal text-[14px] text-text-primary">
+            Datos actualizados hace 2 min
+          </p>
+        </div>
 
-        {bulls.length === 0 && (
-          <p className="text-gray-500 col-span-full text-center mt-6">
+        <div className="flex flex-col items-start w-full">
+          <div className="flex flex-col gap-[8px] items-start w-full">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center">
+                <p className="font-semibold text-[32px] text-text-primary">
+                  Resultados de la clasificación
+                </p>
+              </div>
+            </div>
+            <p className="font-normal text-[16px] text-text-primary w-full">
+              Los resultados están ordenados por Bulltrack Score que reflejan tus objetivos de producción
+            </p>
+          </div>
+        </div>
+
+        <SearchBar 
+          search={search}
+          onSearchChange={setSearch}
+          totalResults={bulls.length}
+        />
+
+        {loading && <p className="text-text-primary">Cargando toros…</p>}
+
+        {!loading && bulls.length === 0 && (
+          <p className="text-text-secondary text-center mt-6 w-full">
             No se encontraron toros
           </p>
         )}
-      </div>
-      <div className="flex justify-center items-center gap-4 mt-8">
-        <button
-          disabled={page === 1}
-          onClick={() => {
-            setPage((p) => p - 1);
-            fetchBulls();
-          }}
-          className="px-4 py-2 rounded-md border disabled:opacity-50"
-        >
-          Anterior
-        </button>
 
-        <span className="font-semibold text-gray-700">
-          Página {page} de {totalPages}
-        </span>
+        {!loading && bulls.length > 0 && (
+          <BullsList 
+            bulls={bulls}
+            currentPage={page}
+            itemsPerPage={limit}
+            onToggleFavorite={toggleFavorite}
+          />
+        )}
 
-        <button
-          disabled={page === totalPages}
-          onClick={() => {
-            setPage((p) => p + 1);
-            fetchBulls();
-          }}
-          className="px-4 py-2 rounded-md border disabled:opacity-50"
-        >
-          Siguiente
-        </button>
+        {!loading && bulls.length > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        )}
       </div>
-    </>
+    </div>
   );
 }
