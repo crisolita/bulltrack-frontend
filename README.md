@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Bulltrack Frontend</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937;">
 
-## Getting Started
+    <h1 style="color:#16a34a;">🐂 Bulltrack – Frontend</h1>
 
-First, run the development server:
+    <p>
+      This is the <strong>frontend application</strong> for the Bulltrack technical test.
+      It was built using <strong>Next.js</strong> and <strong>Tailwind CSS</strong>, and it
+      connects to an existing backend API deployed on Railway.
+    </p>
 
-```bash
+    <hr />
+
+    <h2>🚀 Live Demo</h2>
+    <p>
+      You can access the deployed application here:
+    </p>
+    <p>
+      🔗 <a href="https://bulltrack-frontend.vercel.app" target="_blank">
+        https://bulltrack-frontend.vercel.app
+      </a>
+    </p>
+
+    <hr />
+
+    <h2>🛠️ Tech Stack</h2>
+    <ul>
+      <li><strong>Next.js</strong> (App Router)</li>
+      <li><strong>React</strong></li>
+      <li><strong>Tailwind CSS</strong></li>
+      <li><strong>TypeScript</strong></li>
+      <li><strong>Vercel</strong> for deployment</li>
+    </ul>
+
+    <hr />
+
+    <h2>🔗 Backend Integration</h2>
+    <p>
+      The frontend consumes a REST API deployed on Railway.
+      Environment variables are used to configure the API base URL.
+    </p>
+
+    <pre style="background:#f3f4f6; padding:12px; border-radius:8px;">
+NEXT_PUBLIC_API_URL=https://bulltrack-production.up.railway.ap
+    </pre>
+
+    <hr />
+
+    <h2>⚙️ Local Setup</h2>
+    <ol>
+      <li>Clone the repository</li>
+      <li>Install dependencies:</li>
+    </ol>
+
+    <pre style="background:#f3f4f6; padding:12px; border-radius:8px;">
+npm install
+    </pre>
+
+    <p>3. Run the development server:</p>
+
+    <pre style="background:#f3f4f6; padding:12px; border-radius:8px;">
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+    </pre>
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+    <p>
+      The app will be available at
+      <a href="http://localhost:3000" target="_blank">http://localhost:3000</a>
+    </p>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+    <hr />
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    <h2>🎨 Design Notes</h2>
+    <p>
+      The UI was kept clean and minimal, focusing on functionality and clarity.
+      Tailwind was used to quickly match the provided color palette and layout
+      requirements without aiming for pixel-perfect design.
+    </p>
 
-## Learn More
+    <hr />
 
-To learn more about Next.js, take a look at the following resources:
+    <h2>📌 Notes</h2>
+    <ul>
+      <li>This project was developed as part of a technical assessment.</li>
+      <li>The backend was already implemented and deployed beforehand.</li>
+      <li>Frontend and backend are maintained in separate repositories.</li>
+    </ul>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+    <hr />
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+    <p>
+      👩‍💻 Developed by <strong>Crisol Cova</strong>
+    </p>
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+  </body>
+</html>
