@@ -14,4 +14,5 @@ export interface Bull {
   moderacion: number;
   carcasa: number;
   score: number;
+  favorites: [];
 }

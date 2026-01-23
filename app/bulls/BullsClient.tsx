@@ -2,23 +2,39 @@
 import { Bull } from "../types";
 
 import { useCallback, useEffect, useState } from "react";
-import { refetchBulls } from "./actions";
+import { mark, refetchBulls } from "./actions";
 
 export default function BullsClient({
   initialBulls,
 }: {
   initialBulls: Bull[];
 }) {
+  type ScoreOrder = "high" | "low";
+  type OrigenFilter = "todos" | "propio" | "catalogo" | "favoritos";
+
   const [bulls, setBulls] = useState(initialBulls);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [origen, setOrigen] = useState<OrigenFilter>("todos");
   const [uso, setUso] = useState(true);
   const [pelaje, setPelaje] = useState<"" | "negro" | "colorado">("");
-  type OrigenFilter = "todos" | "propio" | "catalogo" | "favoritos";
+  const [scoreOrder, setScoreOrder] = useState<ScoreOrder>();
+  const [page, setPage] = useState(1);
+  const limit = 9;
+
+  const [totalPages, setTotalPages] = useState(1);
 
   const handleOrigenChange = (value: OrigenFilter) => {
     setOrigen(value);
+  };
+  const toggleFavorite = async (bullId: string) => {
+    try {
+      const updatedBull = await mark(bullId);
+      alert("Marcado como favorito");
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo actualizar el favorito");
+    }
   };
 
   const fetchBulls = useCallback(async (params = {}) => {
@@ -26,14 +42,22 @@ export default function BullsClient({
     const query = new URLSearchParams(params).toString();
     const fechtBulls = await refetchBulls({ filter: query });
     setBulls(fechtBulls.data);
+    setTotalPages(fechtBulls.meta.totalPages);
+
     setLoading(false);
   }, []);
-
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPage(1);
+  }, [search, origen, pelaje, uso, scoreOrder]);
   useEffect(() => {
     const buildParams = (): Record<string, string> => ({
+      page: page.toString(),
+      limit: limit.toString(),
       ...(search ? { search } : {}),
       ...(uso ? { uso: "vaquillona" } : { uso: "vaca" }),
       ...(pelaje ? { pelaje } : {}),
+      ...(scoreOrder ? { sort: scoreOrder } : {}),
       ...(origen && origen !== "todos"
         ? origen === "favoritos"
           ? { favoritos: "true" }
@@ -43,7 +67,7 @@ export default function BullsClient({
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBulls(buildParams());
-  }, [search, origen, pelaje, fetchBulls, uso]);
+  }, [page, search, origen, pelaje, fetchBulls, uso, scoreOrder]);
 
   return (
     <>
@@ -113,9 +137,26 @@ export default function BullsClient({
             <span>Vaquillona</span>
           </label>
         </div>
+        <div className="mt-4">
+          <p className="font-semibold text-gray-700 mb-2">Score</p>
+
+          <select
+            value={scoreOrder}
+            onChange={(e) => {
+              const value = e.target.value as ScoreOrder;
+              setScoreOrder(value);
+              fetchBulls();
+            }}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-accent"
+          >
+            <option value="high">Mejor → peor</option>
+            <option value="low">Peor → mejor</option>
+          </select>
+        </div>
       </aside>
 
       {loading && <p>Cargando toros…</p>}
+      <br></br>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {bulls.map((bull) => (
           <div
@@ -171,6 +212,17 @@ export default function BullsClient({
               <p>
                 <span className="font-semibold">Score:</span> {bull.score}
               </p>
+              <button
+                onClick={() => toggleFavorite(bull.id)}
+                className={`mt-3 w-full px-3 py-2 rounded-md text-sm font-semibold border transition
+    ${
+      bull.favorites
+        ? "bg-primary text-white border-primary"
+        : "bg-white text-primary border-primary hover:bg-primary hover:text-white"
+    }`}
+              >
+                {bull.favorites ? "★ Favorito" : "☆ Marcar favorito"}
+              </button>
             </div>
           </div>
         ))}
@@ -180,6 +232,33 @@ export default function BullsClient({
             No se encontraron toros
           </p>
         )}
+      </div>
+      <div className="flex justify-center items-center gap-4 mt-8">
+        <button
+          disabled={page === 1}
+          onClick={() => {
+            setPage((p) => p - 1);
+            fetchBulls();
+          }}
+          className="px-4 py-2 rounded-md border disabled:opacity-50"
+        >
+          Anterior
+        </button>
+
+        <span className="font-semibold text-gray-700">
+          Página {page} de {totalPages}
+        </span>
+
+        <button
+          disabled={page === totalPages}
+          onClick={() => {
+            setPage((p) => p + 1);
+            fetchBulls();
+          }}
+          className="px-4 py-2 rounded-md border disabled:opacity-50"
+        >
+          Siguiente
+        </button>
       </div>
     </>
   );
