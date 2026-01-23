@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { setCookie } from "cookies-next/client";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export default function LoginPage() {
@@ -21,6 +22,7 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
         credentials: "include",
       });
+      console.log(res);
 
       if (!res.ok) {
         setError("Credenciales incorrectas");
@@ -28,9 +30,11 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
+      console.log("data", data);
+      setCookie("accessToken", data.access_token, { maxAge: 24 * 60 * 60 });
       console.log("Login exitoso:", data);
 
-      router.push("/");
+      router.push("/bulls");
     } catch (err) {
       console.error(err);
       setError("Error al conectarse al servidor");
