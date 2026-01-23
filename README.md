@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Bulltrack Frontend</title>
   </head>
   <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937;">
 
@@ -93,6 +92,7 @@ npm run dev
     <hr />
 
     <p>
+   
       👩‍💻 Developed by <strong>Crisol Cova</strong>
     </p>
 
